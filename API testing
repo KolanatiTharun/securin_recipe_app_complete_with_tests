@@ -1,0 +1,210 @@
+# API testing — quick guide with sample requests
+
+Below are *copy-paste* test commands and example responses you can use to verify the API (both the Postgres and Mongo backends in the package expose the same routes).
+
+> Default ports from the package:
+>
+> * *Postgres backend*: http://localhost:4000
+> * *Mongo backend*: http://localhost:4001
+>   Replace BASE with whichever you started (http://localhost:4000 or http://localhost:4001).
+
+
+
+## 1) Health check
+
+Confirm the server and DB connection are up.
+
+bash
+curl -sS BASE/api/health | jq
+# Example:
+curl -sS http://localhost:4001/api/health | jq
+
+
+*Expected*:
+
+json
+{ "status": "ok" }
+
+
+(or {"status":"db_error"} if DB not reachable)
+
+
+
+## 2) List recipes (paginated, sorted by rating desc)
+
+*Endpoint*: GET /api/recipes
+*Query params*:
+
+* page (default 1)
+* limit (default 10, max depends on server)
+
+### Examples
+
+List first page, 10 items:
+
+bash
+curl -sS "BASE/api/recipes?page=1&limit=10" | jq
+# e.g.
+curl -sS "http://localhost:4001/api/recipes?page=1&limit=10" | jq
+
+
+*Typical response structure*:
+
+json
+{
+  "page": 1,
+  "limit": 10,
+  "total": 8450,
+  "data": [
+    {
+      "id": 123,
+      "cuisine": "American",
+      "title": "Best Apple Pie",
+      "rating": 4.9,
+      "prep_time": 30,
+      "cook_time": 45,
+      "total_time": 75,
+      "description": "...",
+      "nutrients": { "calories": 350, "proteinContent": 4, ... },
+      "serves": "6"
+    },
+    ...
+  ]
+}
+
+
+If using the *Mongo* server, data objects may use _id instead of id.
+
+
+
+## 3) Search / Filter endpoint
+
+*Endpoint*: GET /api/recipes/search
+Supported query filters (examples):
+
+* title — partial match (case-insensitive)
+* cuisine — exact match
+* rating — comparator string, e.g. >=4.5, =3, <2
+* total_time — comparator string, e.g. <=120
+* calories — comparator string applied to nutrients.calories, e.g. <=400
+
+> *Comparator format*: one of >=, <=, >, <, = followed by a number, no spaces required (server accepts with/without space).
+
+### Examples
+
+Find high-rated pies (rating >= 4.5, title contains “pie”):
+
+bash
+curl -sS "BASE/api/recipes/search?title=pie&rating=>=4.5" | jq
+# Example:
+curl -sS "http://localhost:4001/api/recipes/search?title=pie&rating=>=4.5" | jq
+
+
+Find quick recipes (total\_time <= 30 minutes):
+
+bash
+curl -sS "BASE/api/recipes/search?total_time=<=30" | jq
+
+
+Find recipes under 400 kcal:
+
+bash
+curl -sS "BASE/api/recipes/search?calories=<=400" | jq
+
+
+Combine filters (cuisine = Italian, rating >= 4.0, calories <= 500):
+
+bash
+curl -sS "BASE/api/recipes/search?cuisine=Italian&rating=>=4.0&calories=<=500" | jq
+
+
+*Response*:
+
+json
+{
+  "data": [
+    {
+      "id": 456,
+      "title": "Quick Veg Pizza",
+      "cuisine": "Italian",
+      "rating": 4.2,
+      "total_time": 25,
+      "nutrients": { "calories": 420, ... }
+    },
+    ...
+  ]
+}
+
+
+
+
+## 4) Error / validation cases
+
+* Invalid comparator:
+
+  bash
+  curl -i "BASE/api/recipes/search?rating=abc"
+  
+
+  * Expect 400 Bad Request or a JSON error { "error": "Invalid query parameters" } depending on backend.
+
+* No results:
+
+  * You’ll get { "data": [] } or an empty data array in the list response.
+
+
+
+## 5) Use Postman (import collection)
+
+A Postman collection Securin_Recipes.postman_collection.json is included in the zip.
+
+1. Open Postman → Import → choose the JSON file from the project root.
+2. Set environment/baseUrl variable:
+
+   * baseUrl → http://localhost:4001 (or http://localhost:4000)
+3. Run requests:
+
+   * Get Recipes → GET {{baseUrl}}/api/recipes?page=1&limit=10
+   * Search Recipes → GET {{baseUrl}}/api/recipes/search?title=pie&rating=>=4.5
+
+
+
+## 6) Testing checklist (to get full marks)
+
+* [ ] Health endpoint returns ok.
+* [ ] /api/recipes returns paginated list and total.
+* [ ] Results are sorted by rating descending (inspect top records).
+* [ ] /api/recipes/search supports:
+
+  * title partial-match (case-insensitive)
+  * cuisine exact match
+  * rating, total_time, calories with comparators >=, <=, >, <, =
+* [ ] Numeric NaN values are stored/returned as null or omitted (seed script handles this).
+* [ ] Nutrients are available in response (e.g., nutrients.calories) and filter calories works.
+* [ ] Frontend displays results, shows “No results found” when empty, and opens drawer on row click.
+
+
+
+## 7) Example full test session (copy-paste)
+
+Replace BASE with your backend URL:
+
+bash
+BASE="http://localhost:4001"
+
+# health
+curl -sS $BASE/api/health | jq
+
+# list first 5 sorted by rating
+curl -sS "$BASE/api/recipes?page=1&limit=5" | jq
+
+# search: pies rated >= 4.5
+curl -sS "$BASE/api/recipes/search?title=pie&rating=>=4.5" | jq
+
+# search: <= 400 calories
+curl -sS "$BASE/api/recipes/search?calories=<=400" | jq
+
+# invalid query example (expect error)
+curl -i "$BASE/api/recipes/search?rating=high"
+
+
