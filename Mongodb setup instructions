@@ -1,0 +1,82 @@
+Option 1: Using Docker (Recommended)
+
+1. Make sure you have *Docker* & *Docker Compose* installed.
+
+   * [Install Docker](https://docs.docker.com/get-docker/)
+
+2. Inside your extracted project folder (securin-recipe-app-complete/), run:
+
+   bash
+   docker-compose up -d
+   
+
+ This will start:
+
+   * MongoDB on port *27017*
+   * Your Mongo backend API on port *4001*
+
+3. Open Mongo Express (optional) at:
+
+   
+   http://localhost:8081
+   
+
+   (username: root, password: example — same as in docker-compose.yml)
+
+4. *Seed the database* with recipes:
+
+   bash
+   docker exec -it securin-recipe-app-full-server_mongo-1 \
+     node scripts/seed.js
+   
+
+
+
+Option 2: Local MongoDB (No Docker)
+
+1. Install [MongoDB Community Server](https://www.mongodb.com/try/download/community).
+   Start it with:
+
+   bash
+   mongod
+   
+
+2. Create a database named securin_recipes:
+
+   bash
+   mongosh
+   use securin_recipes
+   
+
+3. Update your backend config (server_mongo/src/db.js) with:
+
+   js
+   const MONGO_URL = "mongodb://127.0.0.1:27017/securin_recipes";
+   
+
+4. Seed the database:
+
+   bash
+   cd server_mongo
+   npm install
+   node scripts/seed.js
+   
+
+
+
+ Verify the Data
+
+Run your backend:
+
+bash
+cd server_mongo
+npm run dev
+
+
+Test in browser or Postman:
+
+
+http://localhost:4001/api/recipes?page=1&limit=5
+http://localhost:4001/api/recipes/search?ingredient=chicken
+
+
