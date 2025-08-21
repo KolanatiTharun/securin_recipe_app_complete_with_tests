@@ -1,0 +1,5 @@
+import mongoose from 'mongoose';
+const { Schema } = mongoose;
+const NutrientsSchema = new Schema({ calories: { type: Number, default: null }, carbohydrateContent: { type: Number, default: null }, cholesterolContent: { type: Number, default: null }, fiberContent: { type: Number, default: null }, proteinContent: { type: Number, default: null }, saturatedFatContent: { type: Number, default: null }, sodiumContent: { type: Number, default: null }, sugarContent: { type: Number, default: null }, fatContent: { type: Number, default: null } }, { _id: false, strict: false });
+const RecipeSchema = new Schema({ cuisine: { type: String, index: true }, title: { type: String, index: true }, rating: { type: Number, index: true }, prep_time: { type: Number }, cook_time: { type: Number }, total_time: { type: Number }, description: { type: String }, nutrients: { type: NutrientsSchema, default: {} }, serves: { type: String } }, { timestamps: false });
+export default mongoose.models.Recipe || mongoose.model('Recipe', RecipeSchema);

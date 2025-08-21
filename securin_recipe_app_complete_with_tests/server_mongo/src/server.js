@@ -1,0 +1,10 @@
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import { connectDB } from './db.js';
+import recipesRouter from './routes/recipes.js';
+dotenv.config();
+const app = express(); app.use(cors()); app.use(express.json());
+app.get('/api/health', async (req, res) => { try { await connectDB(); res.json({ status: 'ok' }); } catch (e) { res.status(500).json({ status: 'db_error', error: String(e) }); } });
+app.use('/api/recipes', recipesRouter);
+const PORT = process.env.PORT || 4001; app.listen(PORT, () => console.log(`Mongo API running on http://localhost:${PORT}`));

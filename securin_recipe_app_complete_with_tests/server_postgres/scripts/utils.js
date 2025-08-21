@@ -1,0 +1,1 @@
+export function sanitizeNumber(n){ if(n===null||n===undefined) return null; const num=Number(String(n).replace(/[^0-9.\-]/g,'')); return Number.isNaN(num)?null:num; }

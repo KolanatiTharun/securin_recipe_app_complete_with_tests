@@ -1,0 +1,18 @@
+[
+  {
+    "cuisine": "American",
+    "title": "Sample Apple Pie",
+    "rating": 4.6,
+    "prep_time": 30,
+    "cook_time": 60,
+    "total_time": 90,
+    "description": "A classic apple pie for demo purposes.",
+    "nutrients": {
+      "calories": "350 kcal",
+      "carbohydrateContent": "52",
+      "fiberContent": "4",
+      "proteinContent": "3"
+    },
+    "serves": "6"
+  }
+]
