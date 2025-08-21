@@ -1,0 +1,94 @@
+# 🔹 1. Run the Backend (MongoDB API)
+
+### Using Docker (Recommended)
+
+1. Open a terminal in the project root (securin-recipe-app-complete/).
+
+2. Start services:
+
+   bash
+   docker-compose up -d
+   
+
+   * This runs MongoDB (localhost:27017)
+   * And your backend (localhost:4001)
+
+3. Seed the database (load recipes):
+
+   bash
+   docker exec -it securin-recipe-app-complete-server_mongo-1 \
+     node scripts/seed.js
+   
+
+4. Verify API is working by visiting:
+
+   * [http://localhost:4001/api/recipes?page=1\&limit=5](http://localhost:4001/api/recipes?page=1&limit=5)
+   * [http://localhost:4001/api/recipes/search?ingredient=chicken](http://localhost:4001/api/recipes/search?ingredient=chicken)
+
+
+
+### Without Docker (Local Mongo)
+
+1. Start *MongoDB* locally:
+
+   bash
+   mongod
+   
+2. Configure server_mongo/src/db.js:
+
+   js
+   const MONGO_URL = "mongodb://127.0.0.1:27017/securin_recipes";
+   
+3. Install dependencies:
+
+   bash
+   cd server_mongo
+   npm install
+   
+4. Seed database:
+
+   bash
+   node scripts/seed.js
+   
+5. Run backend:
+
+   bash
+   npm run dev
+   
+
+   → Backend runs at *[http://localhost:4001](http://localhost:4001)*
+
+
+
+ 2. Run the Frontend (React App)
+
+1. Open a new terminal.
+2. Go into the frontend folder:
+
+   bash
+   cd client
+   
+3. Install dependencies:
+
+   bash
+   npm install
+   
+4. Start frontend:
+
+   bash
+   npm run dev
+   
+5. Open in browser:
+
+   
+   http://localhost:5173
+   
+
+ Now React app will fetch recipes from backend API (MongoDB).
+
+
+
+3. Quick Check
+
+* Backend API → http://localhost:4001/api/recipes
+* Frontend UI → http://localhost:5173
